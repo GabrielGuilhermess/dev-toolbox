@@ -1,0 +1,98 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: light;
+
+  --color-bg: #dde3ea;
+  --color-surface: #ffffff;
+  --color-surface-inset: #f1f5f9;
+  --color-surface-elevated: #f8fafc;
+
+  --color-border: #cbd5e1;
+  --color-border-subtle: #e2e8f0;
+  --color-border-strong: #94a3b8;
+
+  --color-text: #0f172a;
+  --color-text-muted: #334155;
+  --color-text-subtle: #64748b;
+
+  --color-primary: #0d9488;
+  --color-primary-hover: #0f766e;
+  --color-primary-fg: #ffffff;
+  --color-primary-subtle: rgba(13, 148, 136, 0.10);
+  --color-primary-muted: rgba(13, 148, 136, 0.15);
+  --color-primary-ring: rgba(13, 148, 136, 0.30);
+
+  --color-hover: rgba(0, 0, 0, 0.05);
+  --color-active: rgba(0, 0, 0, 0.08);
+  --color-output-bg: #f1f5f9;
+}
+
+.dark {
+  color-scheme: dark;
+
+  --color-bg: #0b1120;
+  --color-surface: #1e293b;
+  --color-surface-inset: #141f2e;
+  --color-surface-elevated: #2d3f55;
+
+  --color-border: #334155;
+  --color-border-subtle: #253347;
+  --color-border-strong: #475569;
+
+  --color-text: #f1f5f9;
+  --color-text-muted: #94a3b8;
+  --color-text-subtle: #64748b;
+
+  --color-primary: #2dd4bf;
+  --color-primary-hover: #5eead4;
+  --color-primary-fg: #0f172a;
+  --color-primary-subtle: rgba(45, 212, 191, 0.12);
+  --color-primary-muted: rgba(45, 212, 191, 0.18);
+  --color-primary-ring: rgba(45, 212, 191, 0.30);
+
+  --color-hover: rgba(255, 255, 255, 0.06);
+  --color-active: rgba(255, 255, 255, 0.10);
+  --color-output-bg: #141f2e;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+@keyframes toast-in {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, -0.75rem, 0) scale(0.98);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes toast-out {
+  0% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate3d(0, -0.5rem, 0) scale(0.98);
+  }
+}
