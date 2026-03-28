@@ -1,161 +1,170 @@
-import { useId, useState, type ReactElement } from 'react';
+import { useState, type ReactElement } from 'react';
 import {
   Badge,
   Button,
   Card,
   ClearButton,
-  CopyButton,
-  Textarea,
+  Input,
   ToolInput,
   ToolOutput,
   ToolPage,
 } from '@/shared/components';
-import { useToast } from '@/shared/hooks';
+import { useDocumentTitle, useToast } from '@/shared/hooks';
 import {
   decodeJwt,
+  extractJwtAlgorithm,
   formatPayloadHighlightValue,
   getJwtStatus,
-  renderStatusBadge,
+  validateJwtSignature,
 } from './jwt-decoder.logic';
 import {
+  INITIAL_SIGNATURE_STATUS,
+  INITIAL_TEMPORAL_STATUS,
   PAYLOAD_HIGHLIGHT_KEYS,
   PAYLOAD_HIGHLIGHT_LABELS,
+  SIGNATURE_STATUS_OPTIONS,
+  TEMPORAL_STATUS_OPTIONS,
   type JwtParts,
-  type JwtStatus,
+  type JwtSignatureValidation,
+  type JwtTemporalStatus,
 } from './jwt-decoder.types';
 
-function formatJwtSection(value: Record<string, unknown>): string {
-  return JSON.stringify(value, null, 2);
-}
-
-function hasPayloadField(
-  payload: Record<string, unknown>,
-  key: (typeof PAYLOAD_HIGHLIGHT_KEYS)[number],
-): boolean {
-  return Object.prototype.hasOwnProperty.call(payload, key);
-}
-
 export default function JwtDecoderPage(): ReactElement {
-  const payloadTextareaId = useId();
+  useDocumentTitle('JWT Decoder');
   const { toast } = useToast();
   const [input, setInput] = useState('');
+  const [secret, setSecret] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [decodedToken, setDecodedToken] = useState<JwtParts | null>(null);
-  const [status, setStatus] = useState<JwtStatus | null>(null);
+  const [temporalStatus, setTemporalStatus] = useState<JwtTemporalStatus | null>(null);
+  const [signatureValidation, setSignatureValidation] = useState<JwtSignatureValidation | null>(null);
+  const [isValidating, setIsValidating] = useState(false);
 
-  const formattedHeader = decodedToken === null ? '' : formatJwtSection(decodedToken.header);
-  const formattedPayload = decodedToken === null ? '' : formatJwtSection(decodedToken.payload);
-  const signature = decodedToken?.signature ?? '';
-  const currentStatus = renderStatusBadge(status);
-  const payloadHighlights =
-    decodedToken === null
-      ? []
-      : PAYLOAD_HIGHLIGHT_KEYS.filter((key) => hasPayloadField(decodedToken.payload, key));
+  const temporalBadge =
+    temporalStatus === null ? INITIAL_TEMPORAL_STATUS : TEMPORAL_STATUS_OPTIONS[temporalStatus];
+  const signatureBadge =
+    signatureValidation === null
+      ? INITIAL_SIGNATURE_STATUS
+      : SIGNATURE_STATUS_OPTIONS[signatureValidation.status];
+  const payloadHighlights = decodedToken === null ? [] : PAYLOAD_HIGHLIGHT_KEYS.filter((key) => Object.prototype.hasOwnProperty.call(decodedToken.payload, key));
+  const algorithmLabel = decodedToken === null ? 'Nao informado' : extractJwtAlgorithm(decodedToken.header).algorithm ?? 'Nao informado';
+  const clearDisabled = input.length === 0 && secret.length === 0 && errorMessage.length === 0 && decodedToken === null;
 
-  const handleChange = (value: string): void => {
-    setInput(value);
+  const resetDecodedState = (): void => {
     setErrorMessage('');
     setDecodedToken(null);
-    setStatus(null);
+    setTemporalStatus(null);
+    setSignatureValidation(null);
+    setIsValidating(false);
   };
 
   const handleDecode = (): void => {
     const result = decodeJwt(input);
-
     if (!result.success) {
-      setDecodedToken(null);
-      setStatus(null);
+      resetDecodedState();
       setErrorMessage(`Erro: ${result.error}`);
-      toast({
-        message: result.error,
-        type: 'error',
-      });
+      toast({ message: result.error, type: 'error' });
       return;
     }
-
-    const nextStatus = getJwtStatus(result.data.payload);
-
     setDecodedToken(result.data);
-    setStatus(nextStatus);
+    setTemporalStatus(getJwtStatus(result.data.payload));
+    setSignatureValidation(null);
     setErrorMessage('');
-    toast({
-      message: 'Token JWT decodificado com sucesso.',
-      type: 'success',
-    });
+    toast({ message: 'Token JWT decodificado com sucesso.', type: 'success' });
   };
 
-  const handleClear = (): void => {
-    setInput('');
-    setErrorMessage('');
-    setDecodedToken(null);
-    setStatus(null);
-    toast({
-      message: 'Campos limpos.',
-      type: 'info',
-    });
+  const handleValidateSignature = async (): Promise<void> => {
+    if (decodedToken === null) return;
+    setIsValidating(true);
+    const result = await validateJwtSignature(input, secret);
+    setIsValidating(false);
+    if (!result.success) {
+      setSignatureValidation(null);
+      toast({ message: result.error, type: 'error' });
+      return;
+    }
+    setSignatureValidation(result.data);
+    toast({ message: result.data.message, type: result.data.status === 'valid' ? 'success' : result.data.status === 'invalid' ? 'error' : 'info' });
   };
 
   return (
     <ToolPage
       title="JWT Decoder"
-      description="Decodifique e inspecione tokens JWT (sem validar assinatura)"
+      description="Decodifique JWTs, inspecione header/payload/signature e valide assinatura HMAC no navegador."
       category="data"
     >
       <ToolInput
         label="Token JWT"
-        onChange={handleChange}
+        onChange={(value) => {
+          setInput(value);
+          resetDecodedState();
+        }}
         placeholder="Cole o token JWT aqui..."
         rows={10}
         value={input}
       />
 
       <Card className="rounded-3xl p-5 shadow-lg shadow-black/5">
-        <div className="flex flex-col gap-5">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex flex-wrap items-center gap-3">
-              <Badge variant={currentStatus.variant}>{currentStatus.label}</Badge>
-              <p className="max-w-2xl text-sm leading-6 text-[var(--color-text-muted)]">
-                {currentStatus.description}
-              </p>
-            </div>
-
-            <div className="flex flex-wrap items-center justify-end gap-3">
-              <Button onClick={handleDecode} size="lg" variant="primary">
-                Decodificar
-              </Button>
-              <ClearButton
-                disabled={input.length === 0 && errorMessage.length === 0 && decodedToken === null}
-                onClick={handleClear}
-              />
-            </div>
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-wrap items-center gap-3">
+            <Badge variant={temporalBadge.variant}>{temporalBadge.label}</Badge>
+            <p className="max-w-2xl text-sm leading-6 text-[var(--color-text-muted)]">
+              {temporalBadge.description}
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center justify-end gap-3">
+            <Button onClick={handleDecode} size="lg" variant="primary">
+              Decodificar
+            </Button>
+            <ClearButton disabled={clearDisabled} onClick={() => {
+              setInput('');
+              setSecret('');
+              resetDecodedState();
+              toast({ message: 'Campos limpos.', type: 'info' });
+            }} />
           </div>
         </div>
       </Card>
 
-      {errorMessage.length > 0 ? (
-        <ToolOutput copyable={false} label="Erro" rows={4} value={errorMessage} />
-      ) : null}
+      {errorMessage.length > 0 ? <ToolOutput copyable={false} label="Erro" rows={4} value={errorMessage} /> : null}
 
       {decodedToken !== null ? (
         <>
-          <ToolOutput label="Header" rows={10} value={formattedHeader} />
-
+          <ToolOutput label="Header" rows={10} value={JSON.stringify(decodedToken.header, null, 2)} />
           <Card className="rounded-3xl p-5 shadow-lg shadow-black/5">
-            <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col gap-4">
               <div className="flex flex-wrap items-center gap-3">
-                <label className="text-sm font-semibold" htmlFor={payloadTextareaId}>
-                  Payload
-                </label>
-                {status !== null ? (
-                  <Badge variant={currentStatus.variant}>{currentStatus.label}</Badge>
-                ) : null}
+                <Badge variant={signatureBadge.variant}>{signatureBadge.label}</Badge>
+                <p className="max-w-2xl text-sm leading-6 text-[var(--color-text-muted)]">
+                  {signatureValidation?.message ?? signatureBadge.description}
+                </p>
               </div>
-
-              <CopyButton size="sm" text={formattedPayload} />
+              <div className="flex flex-col gap-4">
+                <Input
+                  autoComplete="off"
+                  label="Segredo HMAC"
+                  onChange={(event) => {
+                    setSecret(event.target.value);
+                    setSignatureValidation(null);
+                  }}
+                  placeholder="Informe o segredo usado para assinar"
+                  type="password"
+                  value={secret}
+                />
+                <p className="text-sm leading-6 text-[var(--color-text-muted)]">
+                  Algoritmo do header: <span className="font-semibold text-[var(--color-text)]">{algorithmLabel}</span>
+                </p>
+              </div>
+              <div className="flex flex-wrap items-center justify-end gap-3">
+                <Button disabled={secret.length === 0} loading={isValidating} onClick={() => { void handleValidateSignature(); }} size="lg" variant="secondary">
+                  Validar assinatura
+                </Button>
+              </div>
             </div>
-
+          </Card>
+          <Card className="rounded-3xl p-5 shadow-lg shadow-black/5">
             {payloadHighlights.length > 0 ? (
-              <div className="mb-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                 {payloadHighlights.map((key) => (
                   <div
                     className="rounded-xl border border-[var(--color-border)] bg-[var(--color-output-bg)] p-3"
@@ -171,22 +180,13 @@ export default function JwtDecoderPage(): ReactElement {
                 ))}
               </div>
             ) : (
-              <p className="mb-4 text-sm leading-6 text-[var(--color-text-muted)]">
+              <p className="text-sm leading-6 text-[var(--color-text-muted)]">
                 Nenhum destaque encontrado entre os campos exp, iat, sub ou iss.
               </p>
             )}
-
-            <Textarea
-              className="min-h-[11rem] bg-[var(--color-output-bg)]"
-              id={payloadTextareaId}
-              monospace
-              readOnly
-              rows={12}
-              value={formattedPayload}
-            />
           </Card>
-
-          <ToolOutput label="Signature" rows={6} value={signature} />
+          <ToolOutput label="Payload" rows={12} value={JSON.stringify(decodedToken.payload, null, 2)} />
+          <ToolOutput label="Signature" rows={6} value={decodedToken.signature} />
         </>
       ) : null}
     </ToolPage>
