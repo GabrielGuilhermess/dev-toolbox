@@ -1,5 +1,5 @@
 import { useId, type ReactElement } from 'react';
-import { Card, Textarea } from '@/shared/components/ui';
+import { Textarea } from '@/shared/components/ui';
 import CopyButton from '@/shared/components/ToolPage/CopyButton';
 
 export interface ToolOutputProps {
@@ -20,9 +20,9 @@ export default function ToolOutput({
   const textareaId = useId();
 
   return (
-    <Card className="p-5 shadow-sm" variant="inset">
-      <div className="mb-3 flex items-center justify-between gap-3">
-        <label className="text-sm font-semibold" htmlFor={textareaId}>
+    <section>
+      <div className="mb-2 flex items-center justify-between gap-3">
+        <label className="text-sm font-medium" htmlFor={textareaId}>
           {label}
         </label>
 
@@ -37,6 +37,6 @@ export default function ToolOutput({
         rows={rows}
         value={value}
       />
-    </Card>
+    </section>
   );
 }
