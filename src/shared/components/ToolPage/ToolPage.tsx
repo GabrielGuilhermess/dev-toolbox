@@ -1,7 +1,6 @@
 import type { ReactElement, ReactNode } from 'react';
 import { useDocumentTitle } from '@/shared/hooks';
 import type { ToolCategory } from '@/shared/types';
-import { Badge, Card } from '@/shared/components/ui';
 
 export interface ToolPageProps {
   title: string;
@@ -16,12 +15,6 @@ const categoryLabels: Record<ToolCategory, string> = {
   utilities: 'Utilitários',
 };
 
-const categoryBadgeVariants: Record<ToolCategory, 'info' | 'success' | 'warning'> = {
-  documents: 'info',
-  data: 'warning',
-  utilities: 'success',
-};
-
 export default function ToolPage({
   title,
   description,
@@ -31,20 +24,20 @@ export default function ToolPage({
   useDocumentTitle(title);
 
   return (
-    <div className="mx-auto flex max-w-4xl flex-col gap-5 px-1 sm:px-2">
-      <Card className="border-l-4 border-l-[var(--color-primary)] bg-[var(--color-surface-inset)] p-6 shadow-sm sm:p-8">
-        <div className="flex flex-col gap-3">
-          <Badge className="self-start" variant={categoryBadgeVariants[category]}>
-            {categoryLabels[category]}
-          </Badge>
-          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">{title}</h1>
-          <p className="text-sm leading-7 text-[var(--color-text-muted)] sm:text-base">
-            {description}
-          </p>
-        </div>
-      </Card>
+    <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
+      <header className="border-t border-[var(--divider-section)] pt-6 sm:pt-8">
+        <p className="font-mono text-xs font-medium uppercase tracking-[0.08em] text-[var(--color-primary)]">
+          {categoryLabels[category]}
+        </p>
+        <h1 className="mt-3 text-2xl font-semibold leading-[1.15] tracking-[-0.02em] sm:text-3xl">
+          {title}
+        </h1>
+        <p className="mt-3 max-w-2xl text-sm leading-6 text-[var(--color-text-muted)] sm:text-base">
+          {description}
+        </p>
+      </header>
 
-      <div className="grid gap-5">{children}</div>
+      <div className="grid gap-5 border-t border-[var(--divider-item)] pt-5">{children}</div>
     </div>
   );
 }

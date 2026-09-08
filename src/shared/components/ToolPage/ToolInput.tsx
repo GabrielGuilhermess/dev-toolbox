@@ -1,5 +1,5 @@
 import { useId, type ChangeEvent, type ReactElement } from 'react';
-import { Card, Textarea } from '@/shared/components/ui';
+import { Textarea } from '@/shared/components/ui';
 
 export interface ToolInputProps {
   label: string;
@@ -25,28 +25,25 @@ export default function ToolInput({
   };
 
   return (
-    <Card className="p-5 shadow-sm">
-      <div className="mb-3 flex items-center justify-between gap-3">
-        <label className="text-sm font-semibold" htmlFor={textareaId}>
+    <section>
+      <div className="mb-2 flex items-center justify-between gap-3">
+        <label className="text-sm font-medium" htmlFor={textareaId}>
           {label}
         </label>
-      </div>
-
-      <div className="relative">
-        <Textarea
-          className="min-h-[11rem] pb-10"
-          id={textareaId}
-          monospace={monospace}
-          onChange={handleChange}
-          placeholder={placeholder}
-          rows={rows}
-          value={value}
-        />
-
-        <span className="pointer-events-none absolute bottom-3 right-3 rounded-lg bg-[var(--color-surface-elevated)] px-2 py-1 text-xs font-medium text-[var(--color-text-subtle)] shadow-sm">
+        <span className="font-mono text-xs text-[var(--color-text-subtle)]">
           {value.length} caracteres
         </span>
       </div>
-    </Card>
+
+      <Textarea
+        className="min-h-[11rem]"
+        id={textareaId}
+        monospace={monospace}
+        onChange={handleChange}
+        placeholder={placeholder}
+        rows={rows}
+        value={value}
+      />
+    </section>
   );
 }

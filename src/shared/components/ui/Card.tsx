@@ -9,15 +9,15 @@ export interface CardProps {
 }
 
 const variantClasses: Record<CardVariant, string> = {
-  default: 'border-[var(--color-border)] bg-[var(--color-surface)]',
-  inset: 'border-[var(--color-border-subtle)] bg-[var(--color-surface-inset)]',
+  default: 'border-[var(--divider-section)] bg-[var(--color-surface)]',
+  inset: 'border-[var(--divider-item)] bg-[var(--color-surface-inset)]',
 };
 
 export default function Card({ children, className, variant = 'default' }: CardProps): ReactElement {
   return (
     <div
       className={[
-        'rounded-3xl border',
+        'rounded-[var(--radius-surface)] border',
         variantClasses[variant],
         className,
       ]

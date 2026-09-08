@@ -14,10 +14,10 @@ export interface TextareaProps extends Omit<TextareaHTMLAttributes<HTMLTextAreaE
 }
 
 const textareaBaseClasses =
-  'w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3 text-sm text-[var(--color-text)] shadow-sm outline-none transition placeholder:text-[var(--color-text-subtle)] focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary-ring)] aria-[invalid=true]:border-rose-500 aria-[invalid=true]:focus:ring-rose-500/20';
+  'w-full rounded-[var(--radius-control)] border border-[var(--divider-section)] bg-[var(--color-surface)] px-3 py-3 text-sm text-[var(--color-text)] outline-none transition-colors duration-[var(--motion-fast)] placeholder:text-[var(--color-text-subtle)] focus:border-[var(--color-primary)] aria-[invalid=true]:border-rose-500';
 
 const readOnlyClasses =
-  'bg-[var(--color-output-bg)] cursor-default border-[var(--color-border-subtle)] focus:border-[var(--color-border-subtle)] focus:ring-0';
+  'cursor-default border-[var(--divider-item)] bg-[var(--color-output-bg)] focus:border-[var(--divider-section)]';
 
 function TextareaComponent(
   {
