@@ -49,7 +49,7 @@ describe('App', () => {
     const navigation = screen.getByRole('navigation', { name: 'Categorias de ferramentas' });
 
     for (const tool of toolRegistry) {
-      fireEvent.click(within(navigation).getByRole('link', { name: new RegExp(tool.name, 'iu') }));
+      fireEvent.click(within(navigation).getByRole('link', { name: tool.name }));
 
       await waitFor(() => {
         expect(window.location.pathname).toBe(tool.path);
