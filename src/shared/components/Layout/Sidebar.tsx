@@ -130,7 +130,9 @@ export default function Sidebar({
               <input
                 aria-label="Buscar ferramenta"
                 className="w-full rounded-[var(--radius-control)] border border-[var(--divider-section)] bg-transparent py-2 pl-8 pr-3 text-sm text-[var(--color-text)] outline-none transition-colors duration-[var(--motion-fast)] placeholder:text-[var(--color-text-subtle)] focus:border-[var(--color-primary)]"
-                onChange={(event) => setSearchTerm(event.target.value)}
+                onChange={(event) => {
+                  setSearchTerm(event.target.value);
+                }}
                 placeholder="Buscar ferramenta..."
                 type="search"
                 value={searchTerm}
@@ -169,7 +171,9 @@ export default function Sidebar({
                           ? 'bg-[var(--color-primary-subtle)] text-[var(--color-primary)]'
                           : 'text-[var(--color-text-muted)] hover:bg-[var(--color-hover)] hover:text-[var(--color-text)]'
                       }`}
-                      onClick={() => expandFromCategory(category.id)}
+                      onClick={() => {
+                        expandFromCategory(category.id);
+                      }}
                       title={category.name}
                       type="button"
                     >
@@ -186,7 +190,9 @@ export default function Sidebar({
                     className={`flex w-full items-center gap-2 px-4 py-2 text-left text-xs font-semibold uppercase tracking-[0.08em] transition-colors duration-[var(--motion-fast)] ${
                       categoryIsActive ? 'text-[var(--color-primary)]' : 'text-[var(--color-text-subtle)]'
                     }`}
-                    onClick={() => toggleCategory(category.id)}
+                    onClick={() => {
+                      toggleCategory(category.id);
+                    }}
                     type="button"
                   >
                     <Icon className="h-3.5 w-3.5" />
