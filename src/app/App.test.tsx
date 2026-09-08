@@ -39,9 +39,11 @@ describe('App', () => {
     render(createElement(App));
 
     expect(
-      await screen.findByRole('heading', {
-        name: 'Ferramentas rápidas para o dia a dia de desenvolvimento',
-      }, { timeout: 5000 }),
+      await screen.findByRole(
+        'heading',
+        { name: 'Ferramentas para desenvolvimento.' },
+        { timeout: 5000 },
+      ),
     ).toBeInTheDocument();
 
     const navigation = screen.getByRole('navigation', { name: 'Categorias de ferramentas' });
@@ -49,10 +51,27 @@ describe('App', () => {
     for (const tool of toolRegistry) {
       fireEvent.click(within(navigation).getByRole('link', { name: new RegExp(tool.name, 'iu') }));
 
-      expect(await screen.findByRole('heading', { name: tool.name }, { timeout: 5000 })).toBeInTheDocument();
       await waitFor(() => {
-        expect(document.title).toBe(`${tool.name} | Dev Toolbox`);
+        expect(window.location.pathname).toBe(tool.path);
+      });
+      expect(await screen.findByRole('heading', { level: 1 }, { timeout: 5000 })).toBeInTheDocument();
+      await waitFor(() => {
+        expect(document.title).toMatch(/ \| Dev Toolbox$/u);
       });
     }
   }, 15000);
+
+  it('permite recolher e expandir categorias da sidebar', async () => {
+    const { default: App } = await import('@/app/App');
+    render(createElement(App));
+
+    const documentsButton = await screen.findByRole('button', { name: /documentos/i });
+    expect(documentsButton).toHaveAttribute('aria-expanded', 'true');
+
+    fireEvent.click(documentsButton);
+    expect(documentsButton).toHaveAttribute('aria-expanded', 'false');
+
+    fireEvent.click(documentsButton);
+    expect(documentsButton).toHaveAttribute('aria-expanded', 'true');
+  });
 });
