@@ -1,14 +1,5 @@
 import { useState, type ReactElement } from 'react';
-import {
-  Badge,
-  Button,
-  Card,
-  ClearButton,
-  CopyButton,
-  ToolInput,
-  ToolOutput,
-  ToolPage,
-} from '@/shared/components';
+import { Button, ClearButton, CopyButton, ToolInput, ToolOutput, ToolPage } from '@/shared/components';
 import { useToast } from '@/shared/hooks';
 import { decodeBase64, encodeBase64 } from './base64-codec.logic';
 import { MODE_OPTIONS, MODE_ORDER, type Base64Mode } from './base64-codec.types';
@@ -18,7 +9,6 @@ export default function Base64CodecPage(): ReactElement {
   const [input, setInput] = useState('');
   const [output, setOutput] = useState('');
   const [mode, setMode] = useState<Base64Mode>('encode');
-
   const activeMode = MODE_OPTIONS[mode];
 
   const handleChange = (value: string): void => {
@@ -33,30 +23,19 @@ export default function Base64CodecPage(): ReactElement {
 
   const handleExecute = (): void => {
     const result = mode === 'encode' ? encodeBase64(input) : decodeBase64(input);
-
     if (!result.success) {
       setOutput(`Erro: ${result.error}`);
-      toast({
-        message: result.error,
-        type: 'error',
-      });
+      toast({ message: result.error, type: 'error' });
       return;
     }
-
     setOutput(result.data);
-    toast({
-      message: activeMode.successMessage,
-      type: 'success',
-    });
+    toast({ message: activeMode.successMessage, type: 'success' });
   };
 
   const handleClear = (): void => {
     setInput('');
     setOutput('');
-    toast({
-      message: 'Campos limpos.',
-      type: 'info',
-    });
+    toast({ message: 'Campos limpos.', type: 'info' });
   };
 
   return (
@@ -65,61 +44,45 @@ export default function Base64CodecPage(): ReactElement {
       description="Codifica e decodifica textos em Base64 com suporte a UTF-8"
       category="data"
     >
-      <ToolInput
-        label={activeMode.inputLabel}
-        onChange={handleChange}
-        placeholder={activeMode.placeholder}
-        rows={14}
-        value={input}
-      />
-
-      <Card className="rounded-3xl p-5 shadow-lg shadow-black/5">
-        <div className="flex flex-col gap-5">
-          <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
-            <div className="flex flex-col gap-2">
-              <span className="text-sm font-semibold">Modo</span>
-              <div aria-label="Modo de operação" className="flex flex-wrap gap-2" role="group">
-                {MODE_ORDER.map((optionValue) => (
-                  <Button
-                    aria-pressed={mode === optionValue}
-                    key={optionValue}
-                    onClick={() => {
-                      handleModeChange(optionValue);
-                    }}
-                    size="sm"
-                    variant={mode === optionValue ? 'primary' : 'secondary'}
-                  >
-                    {MODE_OPTIONS[optionValue].label}
-                  </Button>
-                ))}
-              </div>
-            </div>
-
-            <Button onClick={handleExecute} size="lg" variant="primary">
-              Executar
-            </Button>
+      <div className="flex flex-col gap-4 border-b border-[var(--divider-item)] pb-5 lg:flex-row lg:items-end lg:justify-between">
+        <div className="flex flex-col gap-3">
+          <div aria-label="Modo de operação" className="flex flex-wrap gap-2" role="group">
+            {MODE_ORDER.map((optionValue) => (
+              <Button
+                aria-pressed={mode === optionValue}
+                key={optionValue}
+                onClick={() => {
+                  handleModeChange(optionValue);
+                }}
+                size="sm"
+                variant={mode === optionValue ? 'primary' : 'ghost'}
+              >
+                {MODE_OPTIONS[optionValue].label}
+              </Button>
+            ))}
           </div>
-
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex flex-wrap items-center gap-3">
-              <Badge variant={activeMode.badgeVariant}>{activeMode.label}</Badge>
-              <p className="max-w-2xl text-sm leading-6 text-[var(--color-text-muted)]">
-                {activeMode.description}
-              </p>
-            </div>
-
-            <div className="flex flex-wrap items-center justify-end gap-3">
-              <CopyButton text={output} />
-              <ClearButton
-                disabled={input.length === 0 && output.length === 0}
-                onClick={handleClear}
-              />
-            </div>
-          </div>
+          <p className="text-sm text-[var(--color-text-muted)]">{activeMode.description}</p>
         </div>
-      </Card>
 
-      <ToolOutput copyable={false} label="Resultado" rows={14} value={output} />
+        <div className="flex flex-wrap items-center gap-2">
+          <ClearButton disabled={input.length === 0 && output.length === 0} onClick={handleClear} />
+          <CopyButton text={output} />
+          <Button onClick={handleExecute} variant="primary">
+            Executar
+          </Button>
+        </div>
+      </div>
+
+      <div className="grid gap-5 lg:grid-cols-2">
+        <ToolInput
+          label={activeMode.inputLabel}
+          onChange={handleChange}
+          placeholder={activeMode.placeholder}
+          rows={18}
+          value={input}
+        />
+        <ToolOutput copyable={false} label="Resultado" rows={18} value={output} />
+      </div>
     </ToolPage>
   );
 }
