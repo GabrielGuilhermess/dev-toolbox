@@ -1,8 +1,6 @@
 import { useState, type ChangeEvent, type ReactElement } from 'react';
 import {
-  Badge,
   Button,
-  Card,
   ClearButton,
   CopyButton,
   Select,
@@ -54,140 +52,99 @@ export default function JsonFormatterPage(): ReactElement {
   const handleExecute = (): void => {
     if (mode === 'format') {
       const result = formatJson(input, formatOptions.indent);
-
       if (!result.success) {
         setOutput(`Erro: ${result.error}`);
-        toast({
-          message: result.error,
-          type: 'error',
-        });
+        toast({ message: result.error, type: 'error' });
         return;
       }
-
       setOutput(result.data);
-      toast({
-        message: activeMode.successMessage,
-        type: 'success',
-      });
+      toast({ message: activeMode.successMessage, type: 'success' });
       return;
     }
 
     if (mode === 'validate') {
       const result = validateJson(input);
-
       if (!result.success) {
         setOutput(`Erro: ${result.error}`);
-        toast({
-          message: result.error,
-          type: 'error',
-        });
+        toast({ message: result.error, type: 'error' });
         return;
       }
-
       setOutput(buildValidationOutput(result.data.parsed));
-      toast({
-        message: activeMode.successMessage,
-        type: 'success',
-      });
+      toast({ message: activeMode.successMessage, type: 'success' });
       return;
     }
 
     const result = minifyJson(input);
-
     if (!result.success) {
       setOutput(`Erro: ${result.error}`);
-      toast({
-        message: result.error,
-        type: 'error',
-      });
+      toast({ message: result.error, type: 'error' });
       return;
     }
 
     setOutput(result.data);
-    toast({
-      message: activeMode.successMessage,
-      type: 'success',
-    });
+    toast({ message: activeMode.successMessage, type: 'success' });
   };
 
   const handleClear = (): void => {
     setInput('');
     setOutput('');
-    toast({
-      message: 'Campos limpos.',
-      type: 'info',
-    });
+    toast({ message: 'Campos limpos.', type: 'info' });
   };
+
   return (
     <ToolPage title="JSON Formatter" description="Formate, valide e minifique JSON" category="data">
-      <ToolInput
-        label="JSON"
-        onChange={handleChange}
-        placeholder={'Ex.:\n{\n  "nome": "Dev Toolbox",\n  "ativo": true,\n  "itens": [1, 2, 3]\n}'}
-        rows={14}
-        value={input}
-      />
-
-      <Card className="rounded-3xl p-5 shadow-lg shadow-black/5">
-        <div className="flex flex-col gap-5">
-          <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,14rem)_auto] lg:items-end">
-            <div className="flex flex-col gap-2">
-              <span className="text-sm font-semibold">Modo</span>
-              <div aria-label="Modo de operação" className="flex flex-wrap gap-2" role="group">
-                {MODE_ORDER.map((optionValue) => (
-                  <Button
-                    aria-pressed={mode === optionValue}
-                    key={optionValue}
-                    onClick={() => {
-                      handleModeChange(optionValue);
-                    }}
-                    size="sm"
-                    variant={mode === optionValue ? 'primary' : 'secondary'}
-                  >
-                    {MODE_OPTIONS[optionValue].label}
-                  </Button>
-                ))}
-              </div>
-            </div>
-            {mode === 'format' ? (
-              <Select
-                label="Indentação"
-                options={INDENT_OPTIONS.map((option) => ({
-                  value: option.toString(),
-                  label: `${option.toString()} espaços`,
-                }))}
-                value={formatOptions.indent.toString()}
-                onChange={handleIndentChange}
-              />
-            ) : (
-              <div className="hidden lg:block" />
-            )}
-
-            <Button onClick={handleExecute} size="lg" variant="primary">
-              Executar
-            </Button>
+      <div className="flex flex-col gap-4 border-b border-[var(--divider-item)] pb-5 lg:flex-row lg:items-end lg:justify-between">
+        <div className="flex flex-col gap-3">
+          <div aria-label="Modo de operação" className="flex flex-wrap gap-2" role="group">
+            {MODE_ORDER.map((optionValue) => (
+              <Button
+                aria-pressed={mode === optionValue}
+                key={optionValue}
+                onClick={() => {
+                  handleModeChange(optionValue);
+                }}
+                size="sm"
+                variant={mode === optionValue ? 'primary' : 'ghost'}
+              >
+                {MODE_OPTIONS[optionValue].label}
+              </Button>
+            ))}
           </div>
-
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex flex-wrap items-center gap-3">
-              <Badge variant={activeMode.badgeVariant}>{activeMode.label}</Badge>
-              <p className="max-w-2xl text-sm leading-6 text-[var(--color-text-muted)]">
-                {activeMode.description}
-              </p>
-            </div>
-
-            <div className="flex flex-wrap items-center justify-end gap-3">
-              <CopyButton text={output} />
-              <ClearButton
-                disabled={input.length === 0 && output.length === 0}
-                onClick={handleClear}
-              />
-            </div>
-          </div>
+          <p className="text-sm text-[var(--color-text-muted)]">{activeMode.description}</p>
         </div>
-      </Card>
 
-      <ToolOutput copyable={false} label="Resultado" rows={14} value={output} />
+        <div className="flex flex-wrap items-end gap-2">
+          {mode === 'format' ? (
+            <Select
+              className="min-w-36"
+              controlSize="md"
+              label="Indentação"
+              options={INDENT_OPTIONS.map((option) => ({
+                value: option.toString(),
+                label: `${option.toString()} espaços`,
+              }))}
+              value={formatOptions.indent.toString()}
+              onChange={handleIndentChange}
+            />
+          ) : null}
+          <ClearButton disabled={input.length === 0 && output.length === 0} onClick={handleClear} />
+          <CopyButton text={output} />
+          <Button onClick={handleExecute} variant="primary">
+            Executar
+          </Button>
+        </div>
+      </div>
+
+      <div className="grid gap-5 lg:grid-cols-2">
+        <ToolInput
+          label="JSON"
+          onChange={handleChange}
+          placeholder={'Ex.:\n{\n  "nome": "Dev Toolbox",\n  "ativo": true,\n  "itens": [1, 2, 3]\n}'}
+          rows={18}
+          value={input}
+        />
+        <ToolOutput copyable={false} label="Resultado" rows={18} value={output} />
+      </div>
     </ToolPage>
   );
 }
