@@ -6,6 +6,7 @@ import Sidebar from '@/shared/components/Layout/Sidebar';
 
 export default function Layout(): ReactElement {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   const handleToggleSidebar = (): void => {
     setIsSidebarOpen((currentValue) => !currentValue);
@@ -15,9 +16,22 @@ export default function Layout(): ReactElement {
     setIsSidebarOpen(false);
   };
 
+  const handleToggleCollapsedSidebar = (): void => {
+    setIsSidebarCollapsed((currentValue) => !currentValue);
+  };
+
   return (
-    <div className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text)] md:pl-64">
-      <Sidebar isOpen={isSidebarOpen} onClose={handleCloseSidebar} />
+    <div
+      className={`min-h-screen bg-[var(--color-bg)] text-[var(--color-text)] transition-[padding] duration-[var(--motion-normal)] ease-[var(--motion-easing)] ${
+        isSidebarCollapsed ? 'md:pl-16' : 'md:pl-64'
+      }`}
+    >
+      <Sidebar
+        isCollapsed={isSidebarCollapsed}
+        isOpen={isSidebarOpen}
+        onClose={handleCloseSidebar}
+        onToggleCollapsed={handleToggleCollapsedSidebar}
+      />
 
       <div className="flex min-h-screen flex-col">
         <Header isSidebarOpen={isSidebarOpen} onToggleSidebar={handleToggleSidebar} />
