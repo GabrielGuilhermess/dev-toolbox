@@ -9,6 +9,7 @@ export default function Layout(): ReactElement {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   const handleToggleSidebar = (): void => {
+    setIsSidebarCollapsed(false);
     setIsSidebarOpen((currentValue) => !currentValue);
   };
 
@@ -23,8 +24,9 @@ export default function Layout(): ReactElement {
   return (
     <div
       className={`min-h-screen bg-[var(--color-bg)] text-[var(--color-text)] transition-[padding] duration-[var(--motion-normal)] ease-[var(--motion-easing)] ${
-        isSidebarCollapsed ? 'md:pl-16' : 'md:pl-64'
+        isSidebarCollapsed ? 'md:pl-[4.5rem]' : 'md:pl-64'
       }`}
+      data-layout-sidebar-state={isSidebarCollapsed ? 'collapsed' : 'expanded'}
     >
       <Sidebar
         isCollapsed={isSidebarCollapsed}
