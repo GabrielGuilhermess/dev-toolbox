@@ -40,7 +40,7 @@ export default function Base64CodecPage(): ReactElement {
 
   return (
     <ToolPage
-      title="Base64 Encode/Decode"
+      title="Base64 Codec"
       description="Codifica e decodifica textos em Base64 com suporte a UTF-8"
       category="data"
     >
