@@ -2,7 +2,6 @@ import { useState, type ReactElement } from 'react';
 import {
   Badge,
   Button,
-  Card,
   ClearButton,
   CopyButton,
   ToolInput,
@@ -45,15 +44,11 @@ export default function CpfCnpjValidatorPage(): ReactElement {
     if (!result.success) {
       setOutput('');
       setValidationResult(null);
-      toast({
-        message: result.error,
-        type: 'error',
-      });
+      toast({ message: result.error, type: 'error' });
       return;
     }
 
     const documentLabel = getDocumentLabel(result.data.type);
-
     setValidationResult(result.data);
     setOutput(buildOutput(result.data));
     toast({
@@ -66,54 +61,50 @@ export default function CpfCnpjValidatorPage(): ReactElement {
     setInput('');
     setOutput('');
     setValidationResult(null);
-    toast({
-      message: 'Campos limpos.',
-      type: 'info',
-    });
+    toast({ message: 'Campos limpos.', type: 'info' });
   };
 
   return (
     <ToolPage
-      title="Validador CPF/CNPJ"
-      description="Cole um CPF ou CNPJ e descubra automaticamente se é válido"
+      title="Validador de CPF/CNPJ"
+      description="Detecte o tipo e valide formato e dígitos verificadores"
       category="documents"
     >
-      <ToolInput
-        label="CPF ou CNPJ"
-        onChange={handleChange}
-        placeholder="Ex.: 123.456.789-09, 11.222.333/0001-81 ou apenas os dígitos"
-        rows={4}
-        value={input}
-      />
-
-      <Card className="rounded-3xl p-5 shadow-lg shadow-black/5">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex min-h-11 flex-wrap items-center gap-3">
-            {validationResult !== null ? (
-              <>
-                <Badge variant="info">{getDocumentLabel(validationResult.type)}</Badge>
-                <Badge variant={validationResult.valid ? 'success' : 'error'}>
-                  {validationResult.valid ? 'Válido' : 'Inválido'}
-                </Badge>
-              </>
-            ) : (
-              <p className="text-sm leading-6 text-[var(--color-text-muted)]">
-                Informe um CPF ou CNPJ com ou sem máscara para detectar o tipo automaticamente.
-              </p>
-            )}
-          </div>
-
-          <div className="flex flex-wrap items-center justify-end gap-3">
-            <Button onClick={handleValidate} size="lg" variant="primary">
-              Validar
-            </Button>
-            <CopyButton text={output} />
-            <ClearButton disabled={input.length === 0 && output.length === 0} onClick={handleClear} />
-          </div>
+      <div className="flex flex-col gap-3 border-b border-[var(--divider-item)] pb-5 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex min-h-8 flex-wrap items-center gap-2">
+          {validationResult !== null ? (
+            <>
+              <Badge variant="info">{getDocumentLabel(validationResult.type)}</Badge>
+              <Badge variant={validationResult.valid ? 'success' : 'error'}>
+                {validationResult.valid ? 'Válido' : 'Inválido'}
+              </Badge>
+            </>
+          ) : (
+            <p className="text-sm text-[var(--color-text-muted)]">
+              Informe um CPF ou CNPJ com ou sem máscara.
+            </p>
+          )}
         </div>
-      </Card>
 
-      <ToolOutput copyable={false} label="Resultado da validação" rows={4} value={output} />
+        <div className="flex flex-wrap items-center gap-2">
+          <ClearButton disabled={input.length === 0 && output.length === 0} onClick={handleClear} />
+          <CopyButton text={output} />
+          <Button onClick={handleValidate} variant="primary">
+            Validar
+          </Button>
+        </div>
+      </div>
+
+      <div className="grid gap-5 lg:grid-cols-2">
+        <ToolInput
+          label="CPF ou CNPJ"
+          onChange={handleChange}
+          placeholder="Ex.: 123.456.789-09, 11.222.333/0001-81 ou apenas os dígitos"
+          rows={6}
+          value={input}
+        />
+        <ToolOutput copyable={false} label="Resultado da validação" rows={6} value={output} />
+      </div>
     </ToolPage>
   );
 }
