@@ -24,10 +24,13 @@ function assert(condition, message) {
 }
 
 async function assertNoHorizontalOverflow(page, label) {
-  const metrics = await page.evaluate(() => ({
-    clientWidth: document.documentElement.clientWidth,
-    scrollWidth: document.documentElement.scrollWidth,
-  }));
+  const metrics = await page.evaluate(() => {
+    const root = globalThis.document.documentElement;
+    return {
+      clientWidth: root.clientWidth,
+      scrollWidth: root.scrollWidth,
+    };
+  });
 
   assert(
     metrics.scrollWidth <= metrics.clientWidth + 1,
