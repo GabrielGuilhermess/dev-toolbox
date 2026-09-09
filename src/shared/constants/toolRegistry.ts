@@ -15,8 +15,8 @@ import type { ToolMeta } from '@/shared/types';
 export const toolRegistry: ToolMeta[] = [
   {
     id: 'cpf-generator',
-    name: 'Gerador de CPF para Testes',
-    description: 'Gera dados sintéticos de CPF para desenvolvimento e QA.',
+    name: 'Gerador de CPF',
+    description: 'Gera CPFs válidos para desenvolvimento e testes.',
     category: 'documents',
     path: '/cpf-generator',
     icon: FileText,
@@ -31,8 +31,8 @@ export const toolRegistry: ToolMeta[] = [
   },
   {
     id: 'cnpj-generator',
-    name: 'Gerador de CNPJ para Testes',
-    description: 'Gera dados sintéticos de CNPJ para desenvolvimento e QA.',
+    name: 'Gerador de CNPJ',
+    description: 'Gera CNPJs válidos para desenvolvimento e testes.',
     category: 'documents',
     path: '/cnpj-generator',
     icon: Building2,
@@ -63,15 +63,15 @@ export const toolRegistry: ToolMeta[] = [
   },
   {
     id: 'base64-codec',
-    name: 'Base64 Encoder / Decoder',
-    description: 'Codifica e decodifica texto em Base64 localmente.',
+    name: 'Base64 Codec',
+    description: 'Codifica e decodifica texto em Base64.',
     category: 'data',
     path: '/base64',
     icon: Binary,
   },
   {
     id: 'url-codec',
-    name: 'URL Encoder / Decoder',
+    name: 'URL Codec',
     description: 'Codifica e decodifica componentes de URL.',
     category: 'data',
     path: '/url-codec',
@@ -79,8 +79,8 @@ export const toolRegistry: ToolMeta[] = [
   },
   {
     id: 'jwt-decoder',
-    name: 'JWT Inspector',
-    description: 'Inspeciona header, payload e metadados de tokens JWT localmente.',
+    name: 'JWT Decoder',
+    description: 'Decodifica e inspeciona header, payload e metadados de JWT.',
     category: 'data',
     path: '/jwt-decoder',
     icon: KeyRound,
