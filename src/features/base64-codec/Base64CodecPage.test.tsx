@@ -60,12 +60,12 @@ describe('Base64CodecPage', () => {
     render(createElement(App));
 
     expect(
-      await screen.findByRole('heading', { name: 'Base64 Encode/Decode' }, { timeout: 5000 }),
+      await screen.findByRole('heading', { name: 'Base64 Codec' }, { timeout: 5000 }),
     ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /executar/i })).toBeInTheDocument();
 
     await waitFor(() => {
-      expect(document.title).toBe('Base64 Encode/Decode | Dev Toolbox');
+      expect(document.title).toBe('Base64 Codec | Dev Toolbox');
     });
   }, 10000);
 
