@@ -60,12 +60,12 @@ describe('UrlCodecPage', () => {
     render(createElement(App));
 
     expect(
-      await screen.findByRole('heading', { name: 'URL Encode/Decode' }, { timeout: 5000 }),
+      await screen.findByRole('heading', { name: 'URL Codec' }, { timeout: 5000 }),
     ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /executar/i })).toBeInTheDocument();
 
     await waitFor(() => {
-      expect(document.title).toBe('URL Encode/Decode | Dev Toolbox');
+      expect(document.title).toBe('URL Codec | Dev Toolbox');
     });
   }, 10000);
 
