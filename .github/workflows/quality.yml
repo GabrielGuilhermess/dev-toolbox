@@ -59,7 +59,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Security audit
-        run: pnpm audit --audit-level high
+        run: pnpm audit
 
       - name: Lint
         run: pnpm lint
