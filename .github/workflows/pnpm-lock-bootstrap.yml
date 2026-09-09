@@ -1,0 +1,34 @@
+name: Pnpm lock bootstrap
+
+on:
+  push:
+    branches:
+      - chore/pnpm-runtime-baseline
+
+permissions:
+  contents: read
+
+jobs:
+  lockfile:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.20.0
+
+      - name: Install pnpm
+        run: npm install --global pnpm@11.25.0
+
+      - name: Import npm lockfile
+        run: pnpm import
+
+      - name: Upload pnpm lockfile
+        uses: actions/upload-artifact@v4
+        with:
+          name: pnpm-lock-bootstrap
+          path: pnpm-lock.yaml
+          retention-days: 1
