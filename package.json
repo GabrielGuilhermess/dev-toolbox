@@ -2,9 +2,10 @@
   "name": "dev-toolbox",
   "version": "0.0.0",
   "private": true,
-  "packageManager": "npm@11.19.0",
+  "packageManager": "pnpm@11.25.0",
   "engines": {
-    "node": "24.x"
+    "node": "24.x",
+    "pnpm": "11.25.0"
   },
   "scripts": {
     "dev": "vite",
