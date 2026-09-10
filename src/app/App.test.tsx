@@ -31,11 +31,10 @@ describe('App', () => {
     document.title = '';
   });
 
-  it('navega por todas as ferramentas pela sidebar', async () => {
+  it('mantem nome, heading e titulo consistentes em todas as ferramentas', async () => {
     window.history.pushState({}, '', '/');
 
     const { default: App } = await import('@/app/App');
-
     render(createElement(App));
 
     expect(
@@ -54,9 +53,11 @@ describe('App', () => {
       await waitFor(() => {
         expect(window.location.pathname).toBe(tool.path);
       });
-      expect(await screen.findByRole('heading', { level: 1 }, { timeout: 5000 })).toBeInTheDocument();
+      expect(
+        await screen.findByRole('heading', { level: 1, name: tool.name }, { timeout: 5000 }),
+      ).toBeInTheDocument();
       await waitFor(() => {
-        expect(document.title).toMatch(/ \| Dev Toolbox$/u);
+        expect(document.title).toBe(`${tool.name} | Dev Toolbox`);
       });
     }
   }, 15000);
@@ -73,5 +74,29 @@ describe('App', () => {
 
     fireEvent.click(documentsButton);
     expect(documentsButton).toHaveAttribute('aria-expanded', 'true');
+  });
+
+  it('troca a sidebar expandida por um rail compacto real', async () => {
+    const { default: App } = await import('@/app/App');
+    render(createElement(App));
+
+    const expandedSidebar = await screen.findByLabelText('Navegação de ferramentas');
+    expect(expandedSidebar).toHaveAttribute('data-sidebar-state', 'expanded');
+    expect(screen.getByRole('link', { name: 'Gerador de CPF' })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Recolher menu lateral' }));
+
+    const collapsedSidebar = screen.getByLabelText('Navegação de ferramentas');
+    expect(collapsedSidebar).toHaveAttribute('data-sidebar-state', 'collapsed');
+    expect(screen.queryByRole('link', { name: 'Gerador de CPF' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Expandir menu lateral' })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Expandir menu lateral' }));
+
+    expect(screen.getByLabelText('Navegação de ferramentas')).toHaveAttribute(
+      'data-sidebar-state',
+      'expanded',
+    );
+    expect(screen.getByRole('link', { name: 'Gerador de CPF' })).toBeInTheDocument();
   });
 });

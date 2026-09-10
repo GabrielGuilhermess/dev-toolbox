@@ -2,7 +2,6 @@ import { useState, type ReactElement } from 'react';
 import {
   Badge,
   Button,
-  Card,
   ClearButton,
   CopyButton,
   ToolInput,
@@ -38,10 +37,7 @@ export default function CnpjValidatorPage(): ReactElement {
     if (!result.success) {
       setOutput('');
       setValidationResult(null);
-      toast({
-        message: result.error,
-        type: 'error',
-      });
+      toast({ message: result.error, type: 'error' });
       return;
     }
 
@@ -57,51 +53,47 @@ export default function CnpjValidatorPage(): ReactElement {
     setInput('');
     setOutput('');
     setValidationResult(null);
-    toast({
-      message: 'Campos limpos.',
-      type: 'info',
-    });
+    toast({ message: 'Campos limpos.', type: 'info' });
   };
 
   return (
     <ToolPage
       title="Validador de CNPJ"
-      description="Valide se um CNPJ e matematicamente correto"
+      description="Valide formato e dígitos verificadores de um CNPJ"
       category="documents"
     >
-      <ToolInput
-        label="CNPJ"
-        onChange={handleChange}
-        placeholder="Ex.: 11.222.333/0001-81 ou 11222333000181"
-        rows={4}
-        value={input}
-      />
-
-      <Card className="rounded-3xl p-5 shadow-lg shadow-black/5">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="min-h-11">
-            {validationResult !== null ? (
-              <Badge variant={validationResult.valid ? 'success' : 'error'}>
-                {validationResult.valid ? 'Válido' : 'Inválido'}
-              </Badge>
-            ) : (
-              <p className="text-sm leading-6 text-[var(--color-text-muted)]">
-                Informe um CNPJ com ou sem máscara para verificar os dígitos.
-              </p>
-            )}
-          </div>
-
-          <div className="flex flex-wrap items-center justify-end gap-3">
-            <Button onClick={handleValidate} size="lg" variant="primary">
-              Validar
-            </Button>
-            <CopyButton text={output} />
-            <ClearButton disabled={input.length === 0 && output.length === 0} onClick={handleClear} />
-          </div>
+      <div className="flex flex-col gap-3 border-b border-[var(--divider-item)] pb-5 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-h-8">
+          {validationResult !== null ? (
+            <Badge variant={validationResult.valid ? 'success' : 'error'}>
+              {validationResult.valid ? 'Válido' : 'Inválido'}
+            </Badge>
+          ) : (
+            <p className="text-sm text-[var(--color-text-muted)]">
+              Informe um CNPJ com ou sem máscara.
+            </p>
+          )}
         </div>
-      </Card>
 
-      <ToolOutput copyable={false} label="Resultado da validação" rows={4} value={output} />
+        <div className="flex flex-wrap items-center gap-2">
+          <ClearButton disabled={input.length === 0 && output.length === 0} onClick={handleClear} />
+          <CopyButton text={output} />
+          <Button onClick={handleValidate} variant="primary">
+            Validar
+          </Button>
+        </div>
+      </div>
+
+      <div className="grid gap-5 lg:grid-cols-2">
+        <ToolInput
+          label="CNPJ"
+          onChange={handleChange}
+          placeholder="Ex.: 11.222.333/0001-81 ou 11222333000181"
+          rows={6}
+          value={input}
+        />
+        <ToolOutput copyable={false} label="Resultado da validação" rows={6} value={output} />
+      </div>
     </ToolPage>
   );
 }

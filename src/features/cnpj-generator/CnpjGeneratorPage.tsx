@@ -1,13 +1,9 @@
-import {
-  useState,
-  type ChangeEvent,
-  type ReactElement,
-} from 'react';
+import { useState, type ChangeEvent, type ReactElement } from 'react';
 import {
   Button,
-  Card,
   ClearButton,
   CopyButton,
+  Select,
   ToolOutput,
   ToolPage,
 } from '@/shared/components';
@@ -26,120 +22,87 @@ export default function CnpjGeneratorPage(): ReactElement {
     const result = generateCnpj(options);
 
     if (!result.success) {
-      toast({
-        message: result.error,
-        type: 'error',
-      });
+      toast({ message: result.error, type: 'error' });
       return;
     }
 
     setGeneratedCnpjs(result.data.cnpjs);
-    toast({
-      message: 'CNPJs gerados com sucesso.',
-      type: 'success',
-    });
+    toast({ message: 'CNPJs gerados com sucesso.', type: 'success' });
   };
 
   const handleFormattedChange = (event: ChangeEvent<HTMLInputElement>): void => {
     const { checked } = event.target;
-
-    setOptions((currentOptions) => ({
-      ...currentOptions,
-      formatted: checked,
-    }));
+    setOptions((currentOptions) => ({ ...currentOptions, formatted: checked }));
   };
 
   const handleQuantityChange = (event: ChangeEvent<HTMLSelectElement>): void => {
     const quantity = Number(event.target.value);
-
-    setOptions((currentOptions) => ({
-      ...currentOptions,
-      quantity,
-    }));
+    setOptions((currentOptions) => ({ ...currentOptions, quantity }));
   };
 
   const handleClear = (): void => {
     setGeneratedCnpjs([]);
-    toast({
-      message: 'Resultado limpo.',
-      type: 'info',
-    });
+    toast({ message: 'Resultado limpo.', type: 'info' });
   };
 
   return (
     <ToolPage
       title="Gerador de CNPJ"
-      description="Gere CNPJs validos para testes e desenvolvimento"
+      description="Gere CNPJs válidos para testes e desenvolvimento"
       category="documents"
     >
-      <Card className="rounded-3xl p-5 shadow-lg shadow-black/5">
-        <div className="flex flex-col gap-5">
-          <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="flex flex-col gap-2">
-                <label className="text-sm font-semibold" htmlFor="cnpj-generator-quantity">
-                  Quantidade
-                </label>
-                <select
-                  className="h-11 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-4 text-sm text-[var(--color-text)] shadow-sm outline-none transition focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary-ring)]"
-                  id="cnpj-generator-quantity"
-                  onChange={handleQuantityChange}
-                  value={options.quantity}
-                >
-                  {QUANTITY_OPTIONS.map((quantityOption) => (
-                    <option key={quantityOption} value={quantityOption}>
-                      {quantityOption}
-                    </option>
-                  ))}
-                </select>
-              </div>
+      <div className="flex flex-col gap-4 border-b border-[var(--divider-item)] pb-5 lg:flex-row lg:items-end lg:justify-between">
+        <div className="grid gap-4 sm:grid-cols-[10rem_auto] sm:items-end">
+          <Select
+            controlSize="md"
+            id="cnpj-generator-quantity"
+            label="Quantidade"
+            onChange={handleQuantityChange}
+            options={QUANTITY_OPTIONS.map((quantityOption) => ({
+              value: quantityOption,
+              label: String(quantityOption),
+            }))}
+            value={options.quantity}
+          />
 
-              <div className="flex flex-col gap-2">
-                <span className="text-sm font-semibold">Formato</span>
-                <label
-                  className="flex min-h-11 items-center gap-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-4 text-sm text-[var(--color-text)] shadow-sm"
-                  htmlFor="cnpj-generator-formatted"
-                >
-                  <input
-                    checked={options.formatted}
-                    className="h-4 w-4 rounded border-[var(--color-border)] text-[var(--color-primary)] focus:ring-[var(--color-primary)]/20"
-                    id="cnpj-generator-formatted"
-                    onChange={handleFormattedChange}
-                    type="checkbox"
-                  />
-                  Gerar com mascara
-                </label>
-              </div>
-            </div>
-
-            <Button onClick={handleGenerate} size="lg" variant="primary">
-              Gerar
-            </Button>
-          </div>
-
-          <p className="text-sm leading-6 text-[var(--color-text-muted)]">
-            Ajuste as opções e gere CNPJs únicos para testes, seeds e cenários de
-            homologação.
-          </p>
+          <label
+            className="flex min-h-10 items-center gap-2 text-sm text-[var(--color-text)]"
+            htmlFor="cnpj-generator-formatted"
+          >
+            <input
+              checked={options.formatted}
+              className="h-4 w-4 accent-[var(--color-primary)]"
+              id="cnpj-generator-formatted"
+              onChange={handleFormattedChange}
+              type="checkbox"
+            />
+            Gerar com mascara
+          </label>
         </div>
-      </Card>
 
-      <ToolOutput
-        copyable={false}
-        label="Parâmetros da geração"
-        monospace={false}
-        rows={3}
-        value={formatCnpjGeneratorOptions(options)}
-      />
-
-      <ToolOutput copyable={false} label="CNPJs gerados" rows={10} value={output} />
-
-      <Card className="rounded-3xl p-5 shadow-lg shadow-black/5">
-        <div className="flex flex-wrap items-center justify-end gap-3">
-          <CopyButton text={output} />
+        <div className="flex flex-wrap items-center gap-2">
           <ClearButton disabled={generatedCnpjs.length === 0} onClick={handleClear} />
+          <CopyButton text={output} />
+          <Button onClick={handleGenerate} variant="primary">
+            Gerar
+          </Button>
         </div>
-      </Card>
+      </div>
+
+      <p className="text-sm leading-6 text-[var(--color-text-muted)]">
+        Ajuste a quantidade e o formato antes de gerar os valores.
+      </p>
+
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,18rem)_minmax(0,1fr)]">
+        <ToolOutput
+          copyable={false}
+          label="Parâmetros da geração"
+          monospace={false}
+          rows={3}
+          value={formatCnpjGeneratorOptions(options)}
+        />
+        <ToolOutput copyable={false} label="CNPJs gerados" rows={10} value={output} />
+      </div>
     </ToolPage>
   );
 }

@@ -60,12 +60,12 @@ describe('CpfCnpjValidatorPage', () => {
     render(createElement(App));
 
     expect(
-      await screen.findByRole('heading', { name: 'Validador CPF/CNPJ' }, { timeout: 5000 }),
+      await screen.findByRole('heading', { name: 'Validador de CPF/CNPJ' }, { timeout: 5000 }),
     ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /validar/i })).toBeInTheDocument();
 
     await waitFor(() => {
-      expect(document.title).toBe('Validador CPF/CNPJ | Dev Toolbox');
+      expect(document.title).toBe('Validador de CPF/CNPJ | Dev Toolbox');
     });
   }, 10000);
 

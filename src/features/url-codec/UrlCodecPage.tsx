@@ -40,8 +40,8 @@ export default function UrlCodecPage(): ReactElement {
 
   return (
     <ToolPage
-      title="URL Encode/Decode"
-      description="Encode e decode strings para uso em URLs"
+      title="URL Codec"
+      description="Codifica e decodifica strings para uso em URLs"
       category="data"
     >
       <div className="flex flex-col gap-4 border-b border-[var(--divider-item)] pb-5 lg:flex-row lg:items-end lg:justify-between">
