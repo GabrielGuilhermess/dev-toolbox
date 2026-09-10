@@ -70,11 +70,13 @@ async function assertKeyboardReachability(page, label) {
 
 async function assertCriticalTouchTargets(page, viewport, label) {
   if (viewport.width >= 768) return;
-  for (const name of ['Abrir menu lateral', 'Alternar para tema escuro']) {
-    const control = page.getByRole('button', { name });
-    if ((await control.count()) === 0) continue;
+  const controls = [
+    page.getByRole('button', { name: 'Abrir menu lateral' }),
+    page.getByRole('button', { name: /Alternar para tema (claro|escuro)/ }),
+  ];
+  for (const control of controls) {
     const box = await control.boundingBox();
-    assert(box !== null && box.width >= 40 && box.height >= 40, `${label}: ${name} touch target is below 40px`);
+    assert(box !== null && box.width >= 40 && box.height >= 40, `${label}: critical touch target is below 40px`);
   }
 }
 
@@ -105,6 +107,10 @@ async function validateMobileDrawer(page) {
   const closeButton = page.getByRole('banner').getByRole('button', { name: 'Fechar menu lateral' });
   await closeButton.waitFor();
   const sidebar = page.getByLabel('Navegação de ferramentas');
+  await page.waitForFunction(() => {
+    const element = globalThis.document.querySelector('aside[aria-label="Navegação de ferramentas"]');
+    return element !== null && element.getBoundingClientRect().x >= -1;
+  });
   const box = await sidebar.boundingBox();
   assert(box !== null && box.x >= -1, 'Sidebar: mobile drawer did not enter viewport');
   await closeButton.click();
