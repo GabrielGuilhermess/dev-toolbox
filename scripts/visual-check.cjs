@@ -102,11 +102,12 @@ async function validateDesktopSidebar(page) {
 
 async function validateMobileDrawer(page) {
   await page.getByRole('button', { name: 'Abrir menu lateral' }).click();
-  await page.getByRole('button', { name: 'Fechar menu lateral' }).waitFor();
+  const closeButton = page.getByRole('banner').getByRole('button', { name: 'Fechar menu lateral' });
+  await closeButton.waitFor();
   const sidebar = page.getByLabel('Navegação de ferramentas');
   const box = await sidebar.boundingBox();
   assert(box !== null && box.x >= -1, 'Sidebar: mobile drawer did not enter viewport');
-  await page.getByRole('button', { name: 'Fechar menu lateral' }).first().click();
+  await closeButton.click();
   await page.getByRole('button', { name: 'Abrir menu lateral' }).waitFor();
 }
 
