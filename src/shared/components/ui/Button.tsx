@@ -21,7 +21,7 @@ const baseClasses =
   'inline-flex items-center justify-center gap-2 rounded-[var(--radius-control)] font-medium transition-colors duration-[var(--motion-fast)] disabled:cursor-not-allowed disabled:opacity-50';
 
 const variantClasses: Record<ButtonVariant, string> = {
-  primary: 'bg-[var(--color-primary)] text-[var(--color-primary-fg)] hover:bg-[var(--color-primary-hover)]',
+  primary: 'bg-[var(--color-primary-action)] text-[var(--color-primary-fg)] hover:bg-[var(--color-primary-hover)]',
   secondary:
     'border border-[var(--divider-section)] bg-transparent text-[var(--color-text)] hover:border-[var(--color-primary)] hover:text-[var(--color-primary)]',
   ghost: 'bg-transparent text-[var(--color-text-muted)] hover:bg-[var(--color-hover)] hover:text-[var(--color-text)]',
