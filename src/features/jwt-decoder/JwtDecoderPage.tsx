@@ -221,9 +221,10 @@ export default function JwtDecoderPage(): ReactElement {
                 <p className="mt-1 text-sm leading-6 text-[var(--color-text-muted)]">
                   {signatureValidation?.message ?? signatureState.description}
                 </p>
-                <p className="mt-2 font-mono text-xs text-[var(--color-text-subtle)]">
-                  Algoritmo do header: {algorithmLabel}
-                </p>
+                <div className="mt-2 flex flex-wrap items-baseline gap-2 text-xs text-[var(--color-text-subtle)]">
+                  <span>Algoritmo do header:</span>
+                  <span className="font-mono">{algorithmLabel}</span>
+                </div>
               </div>
 
               <div className="space-y-3">
