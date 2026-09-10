@@ -34,7 +34,7 @@ function assert(condition, message) {
 
 async function assertNoHorizontalOverflow(page, label) {
   const metrics = await page.evaluate(() => {
-    const root = document.documentElement;
+    const root = globalThis.document.documentElement;
     return { clientWidth: root.clientWidth, scrollWidth: root.scrollWidth };
   });
   assert(
@@ -50,8 +50,8 @@ async function assertSemantics(page, label) {
 
 async function assertTheme(page, theme, label) {
   const state = await page.evaluate(() => ({
-    isDark: document.documentElement.classList.contains('dark'),
-    stored: localStorage.getItem('dev-toolbox-theme'),
+    isDark: globalThis.document.documentElement.classList.contains('dark'),
+    stored: globalThis.localStorage.getItem('dev-toolbox-theme'),
   }));
   assert(state.isDark === (theme === 'dark'), `${label}: root theme class does not match ${theme}`);
   assert(state.stored === theme, `${label}: persisted theme does not match ${theme}`);
@@ -61,8 +61,8 @@ async function assertKeyboardReachability(page, label) {
   await page.locator('body').click({ position: { x: 1, y: 1 } });
   await page.keyboard.press('Tab');
   const focused = await page.evaluate(() => {
-    const element = document.activeElement;
-    if (!(element instanceof HTMLElement)) return null;
+    const element = globalThis.document.activeElement;
+    if (!(element instanceof globalThis.HTMLElement)) return null;
     return { tag: element.tagName, role: element.getAttribute('role'), type: element.getAttribute('type') };
   });
   assert(focused !== null && focused.tag !== 'BODY', `${label}: Tab did not reach an interactive control`);
@@ -147,7 +147,7 @@ async function validateRoute(page, route, viewport, theme, errors) {
       for (const theme of themes) {
         const context = await browser.newContext({ viewport, colorScheme: theme, reducedMotion: 'reduce' });
         await context.addInitScript((initialTheme) => {
-          localStorage.setItem('dev-toolbox-theme', initialTheme);
+          globalThis.localStorage.setItem('dev-toolbox-theme', initialTheme);
         }, theme);
         const page = await context.newPage();
         const errors = { console: [], page: [] };
