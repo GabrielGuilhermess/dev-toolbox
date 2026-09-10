@@ -57,7 +57,7 @@ async function assertKeyboardAndVisibleFocus(page, label) {
 
   await page.locator('body').click({ position: { x: 1, y: 1 } });
   const reached = new Set();
-  let visibleFocusCount = 0;
+  const missingFocusIndicators = new Map();
   for (let index = 0; index < expected + 8; index += 1) {
     await page.keyboard.press('Tab');
     const state = await page.evaluate((selector) => {
@@ -71,15 +71,25 @@ async function assertKeyboardAndVisibleFocus(page, label) {
       const style = globalThis.getComputedStyle(element);
       const outlineVisible = style.outlineStyle !== 'none' && Number.parseFloat(style.outlineWidth) > 0;
       const shadowVisible = style.boxShadow !== 'none';
-      return { index: candidates.indexOf(element), focusVisible: element.matches(':focus-visible'), indicatorVisible: outlineVisible || shadowVisible };
+      return {
+        index: candidates.indexOf(element),
+        descriptor: element.getAttribute('aria-label') || element.textContent?.trim().slice(0, 40) || element.tagName,
+        focusVisible: element.matches(':focus-visible'),
+        indicatorVisible: outlineVisible || shadowVisible,
+      };
     }, focusableSelector);
     if (!state || state.index < 0) continue;
     reached.add(state.index);
-    if (state.focusVisible && state.indicatorVisible) visibleFocusCount += 1;
+    if (!(state.focusVisible && state.indicatorVisible)) {
+      missingFocusIndicators.set(state.index, state.descriptor);
+    }
     if (reached.size === expected) break;
   }
   assert(reached.size === expected, `${label}: keyboard reached ${reached.size}/${expected} visible controls`);
-  assert(visibleFocusCount > 0, `${label}: no visible focus indicator detected during keyboard traversal`);
+  assert(
+    missingFocusIndicators.size === 0,
+    `${label}: ${missingFocusIndicators.size} keyboard-reached control(s) lack visible focus (${Array.from(missingFocusIndicators.values()).join(', ')})`,
+  );
 }
 
 async function assertContrast(page, label) {
@@ -103,8 +113,9 @@ async function assertContrast(page, label) {
     const backgroundOf = (element) => {
       let current = element;
       while (current) {
-        const parsed = parse(globalThis.getComputedStyle(current).backgroundColor);
-        if (parsed && globalThis.getComputedStyle(current).backgroundColor !== 'rgba(0, 0, 0, 0)') return parsed;
+        const style = globalThis.getComputedStyle(current);
+        const parsed = parse(style.backgroundColor);
+        if (parsed && style.backgroundColor !== 'rgba(0, 0, 0, 0)') return parsed;
         current = current.parentElement;
       }
       return [255, 255, 255];
@@ -112,14 +123,22 @@ async function assertContrast(page, label) {
     return Array.from(globalThis.document.querySelectorAll('main h1, main button, main a, main label')).flatMap((element) => {
       const rect = element.getBoundingClientRect();
       if (rect.width === 0 || rect.height === 0) return [];
-      const foreground = parse(globalThis.getComputedStyle(element).color);
+      const style = globalThis.getComputedStyle(element);
+      const foreground = parse(style.color);
       const background = backgroundOf(element);
       if (!foreground) return [];
       const value = ratio(foreground, background);
-      return value < 3 ? [`${element.tagName}:${(element.textContent || element.getAttribute('aria-label') || '').trim().slice(0, 40)}=${value.toFixed(2)}`] : [];
+      const visibleText = (element.textContent || '').trim();
+      const fontSize = Number.parseFloat(style.fontSize);
+      const fontWeight = Number.parseInt(style.fontWeight, 10) || 400;
+      const largeText = fontSize >= 24 || (fontSize >= 18.66 && fontWeight >= 700);
+      const minimum = visibleText ? (largeText ? 3 : 4.5) : 3;
+      return value < minimum
+        ? [`${element.tagName}:${(visibleText || element.getAttribute('aria-label') || '').slice(0, 40)}=${value.toFixed(2)}<${minimum}`]
+        : [];
     });
   });
-  assert(failures.length === 0, `${label}: contrast below 3:1 (${failures.join(', ')})`);
+  assert(failures.length === 0, `${label}: insufficient contrast (${failures.join(', ')})`);
 }
 
 async function assertReducedMotion(page, label) {
@@ -170,8 +189,17 @@ async function validateDesktopSidebar(page) {
   await page.getByRole('button', { name: 'Recolher menu lateral' }).waitFor();
 }
 
-async function validateMobileDrawer(page) {
-  await page.getByRole('button', { name: 'Abrir menu lateral' }).click();
+async function validateMobileDrawer(page, label) {
+  await page.locator('body').click({ position: { x: 1, y: 1 } });
+  let openerReached = false;
+  for (let index = 0; index < 12; index += 1) {
+    await page.keyboard.press('Tab');
+    openerReached = await page.evaluate(() => globalThis.document.activeElement?.getAttribute('aria-label') === 'Abrir menu lateral');
+    if (openerReached) break;
+  }
+  assert(openerReached, `${label}: mobile drawer opener is not keyboard-reachable`);
+  await page.keyboard.press('Enter');
+
   const overlay = page.getByRole('button', { name: 'Fechar menu lateral' }).first();
   await overlay.waitFor();
   const sidebar = page.getByLabel('Navegação de ferramentas');
@@ -180,9 +208,51 @@ async function validateMobileDrawer(page) {
     return element !== null && element.getBoundingClientRect().x >= -1;
   });
   const box = await sidebar.boundingBox();
-  assert(box !== null && box.x >= -1, 'Sidebar: mobile drawer did not enter viewport');
+  assert(box !== null && box.x >= -1, `${label}: mobile drawer did not enter viewport`);
+
+  const expectedDrawerControls = await sidebar.locator(focusableSelector).evaluateAll((elements) => elements.filter((element) => {
+    const style = globalThis.getComputedStyle(element);
+    const rect = element.getBoundingClientRect();
+    return style.visibility !== 'hidden' && style.display !== 'none' && rect.width > 0 && rect.height > 0;
+  }).length);
+  assert(expectedDrawerControls > 0, `${label}: mobile drawer has no visible keyboard controls`);
+
+  const reached = new Set();
+  const missingFocusIndicators = new Map();
+  for (let index = 0; index < expectedDrawerControls + 12; index += 1) {
+    await page.keyboard.press('Tab');
+    const state = await page.evaluate((selector) => {
+      const sidebarElement = globalThis.document.querySelector('aside[aria-label="Navegação de ferramentas"]');
+      const element = globalThis.document.activeElement;
+      if (!(sidebarElement instanceof globalThis.HTMLElement) || !(element instanceof globalThis.HTMLElement) || !sidebarElement.contains(element) || !element.matches(selector)) return null;
+      const candidates = Array.from(sidebarElement.querySelectorAll(selector)).filter((candidate) => {
+        const style = globalThis.getComputedStyle(candidate);
+        const rect = candidate.getBoundingClientRect();
+        return style.visibility !== 'hidden' && style.display !== 'none' && rect.width > 0 && rect.height > 0;
+      });
+      const style = globalThis.getComputedStyle(element);
+      const outlineVisible = style.outlineStyle !== 'none' && Number.parseFloat(style.outlineWidth) > 0;
+      const shadowVisible = style.boxShadow !== 'none';
+      return {
+        index: candidates.indexOf(element),
+        descriptor: element.getAttribute('aria-label') || element.textContent?.trim().slice(0, 40) || element.tagName,
+        focusVisible: element.matches(':focus-visible'),
+        indicatorVisible: outlineVisible || shadowVisible,
+      };
+    }, focusableSelector);
+    if (!state || state.index < 0) continue;
+    reached.add(state.index);
+    if (!(state.focusVisible && state.indicatorVisible)) missingFocusIndicators.set(state.index, state.descriptor);
+    if (reached.size === expectedDrawerControls) break;
+  }
+  assert(reached.size === expectedDrawerControls, `${label}: keyboard reached ${reached.size}/${expectedDrawerControls} mobile drawer controls`);
+  assert(
+    missingFocusIndicators.size === 0,
+    `${label}: mobile drawer controls lack visible focus (${Array.from(missingFocusIndicators.values()).join(', ')})`,
+  );
+
   const overlayBox = await overlay.boundingBox();
-  assert(overlayBox !== null, 'Sidebar: mobile overlay has no bounding box');
+  assert(overlayBox !== null, `${label}: mobile overlay has no bounding box`);
   await overlay.click({ position: { x: overlayBox.width - 20, y: 20 } });
   await page.getByRole('button', { name: 'Abrir menu lateral' }).waitFor();
 }
@@ -207,7 +277,7 @@ async function validateRoute(page, route, viewport, theme, errors) {
     await validateHomeTrustMessage(page);
     await assertCriticalTouchTargets(page, viewport, label);
     if (viewport.width >= 1280) await validateDesktopSidebar(page);
-    if (viewport.width < 768) await validateMobileDrawer(page);
+    if (viewport.width < 768) await validateMobileDrawer(page, label);
   }
 
   if (screenshotRoutes.includes(route)) {
@@ -246,7 +316,7 @@ async function validateRoute(page, route, viewport, theme, errors) {
   } finally {
     await browser.close();
   }
-  console.log(`Responsive/accessibility validation passed: ${viewports.length} viewports x ${themes.length} themes x ${smokeRoutes.length} routes, with keyboard/focus/contrast/reduced-motion checks and ${screenshotRoutes.length * viewports.length * themes.length} screenshots.`);
+  console.log(`Responsive/accessibility validation passed: ${viewports.length} viewports x ${themes.length} themes x ${smokeRoutes.length} routes, with per-control keyboard/focus, WCAG text contrast, reduced-motion and mobile-drawer keyboard checks plus ${screenshotRoutes.length * viewports.length * themes.length} screenshots.`);
 })().catch((error) => {
   console.error(error);
   process.exitCode = 1;
